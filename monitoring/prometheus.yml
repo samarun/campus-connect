@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  - job_name: campus-connect-web
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ["campus-connect-web:3000"]
+
+  - job_name: rtc-server
+    static_configs:
+      - targets: ["host.docker.internal:6789"]
+
+  - job_name: rtc-ingress
+    static_configs:
+      - targets: ["rtc-ingress:6788"]
+
+  - job_name: rtc-egress
+    static_configs:
+      - targets: ["rtc-egress:6787"]

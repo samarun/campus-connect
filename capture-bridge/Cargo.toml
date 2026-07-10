@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/capture-common",
+  "crates/capture-core",
+  "crates/capture-cli",
+  "crates/capture-daemon",
+  "apps/capture-gui/src-tauri"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+authors = ["Campus Connect"]
+
+[workspace.dependencies]
+anyhow = "1.0"
+axum = "0.7"
+clap = { version = "4.5", features = ["derive", "env"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tauri = "2.2"
+tauri-build = "2.0"
+thiserror = "2.0"
+tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "process", "signal", "sync", "time"] }
+toml = "0.8"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+which = "7.0"
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+strip = "symbols"

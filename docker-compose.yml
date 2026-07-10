@@ -1,0 +1,247 @@
+name: campus-connect
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1000"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    logging: *default-logging
+
+  rtc-server:
+    image: ${RTC_SERVER_IMAGE:?Set RTC_SERVER_IMAGE in .env to a pinned RTC server image tag}
+    command: ["--config", "/etc/livekit/rtc.yaml"]
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    network_mode: host
+    volumes:
+      - ./runtime/rtc/server.yaml:/etc/livekit/rtc.yaml:ro
+      - letsencrypt:/etc/letsencrypt:ro
+    logging: *default-logging
+
+  rtc-ingress:
+    image: ${RTC_INGRESS_IMAGE:?Set RTC_INGRESS_IMAGE in .env to a pinned RTC ingress image tag}
+    restart: unless-stopped
+    environment:
+      INGRESS_CONFIG_FILE: /etc/livekit/ingress.yaml
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "1935:1935/tcp"
+      - "8080:8080/tcp"
+      - "7885:7885/udp"
+    volumes:
+      - ./runtime/rtc/ingress.yaml:/etc/livekit/ingress.yaml:ro
+    logging: *default-logging
+
+  rtc-egress:
+    image: ${RTC_EGRESS_IMAGE:?Set RTC_EGRESS_IMAGE in .env to a pinned RTC egress image tag}
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      EGRESS_CONFIG_FILE: /etc/livekit/egress.yaml
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./runtime/rtc/egress.yaml:/etc/livekit/egress.yaml:ro
+      - egress-data:/out
+    logging: *default-logging
+
+  coturn:
+    image: coturn/coturn:4.6-alpine
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - "-c"
+      - "/etc/coturn/turnserver.conf"
+      - "--realm=${TURN_DOMAIN}"
+      - "--server-name=${TURN_DOMAIN}"
+      - "--static-auth-secret=${TURN_STATIC_AUTH_SECRET}"
+      - "--external-ip=${PUBLIC_IP}"
+      - "--cert=/etc/letsencrypt/live/${TURN_DOMAIN}/fullchain.pem"
+      - "--pkey=/etc/letsencrypt/live/${TURN_DOMAIN}/privkey.pem"
+    volumes:
+      - ./config/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - letsencrypt:/etc/letsencrypt:ro
+    logging: *default-logging
+
+  streaming-relay:
+    image: ${STREAMING_RELAY_IMAGE:-ovenmedialabs/ovenmediaengine:v0.20.5}
+    restart: unless-stopped
+    environment:
+      OME_HOST_IP: ${PUBLIC_IP}
+    ports:
+      - "1936:1935/tcp"
+      - "9999:9999/udp"
+      - "3333:3333/tcp"
+      - "3334:3334/tcp"
+      - "10000-10003:10000-10003/udp"
+      - "10000:10000/tcp"
+    volumes:
+      - ./runtime/streaming/Server.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml:ro
+      - streaming-relay-logs:/var/log/ovenmediaengine
+      - letsencrypt:/etc/letsencrypt:ro
+    logging: *default-logging
+
+  campus-connect-web:
+    build:
+      context: ./campus-connect-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      APP_BASE_URL: ${APP_BASE_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
+      OPERATOR_PASSWORD_HASH: ${OPERATOR_PASSWORD_HASH}
+      MAIN_PASSWORD_HASH: ${MAIN_PASSWORD_HASH}
+      CAMPUS_B_PASSWORD_HASH: ${CAMPUS_B_PASSWORD_HASH}
+      CAMPUS_C_PASSWORD_HASH: ${CAMPUS_C_PASSWORD_HASH}
+      RTC_API_KEY: ${RTC_API_KEY}
+      RTC_API_SECRET: ${RTC_API_SECRET}
+      RTC_API_URL: ${RTC_API_URL}
+      NEXT_PUBLIC_RTC_URL: ${NEXT_PUBLIC_RTC_URL}
+      NEXT_PUBLIC_STREAM_LLHLS_BASE_URL: ${NEXT_PUBLIC_STREAM_LLHLS_BASE_URL}
+      RELAY_SRT_PUBLISH_URL: ${RELAY_SRT_PUBLISH_URL}
+      PLATFORM_NAME: ${PLATFORM_NAME}
+      ORGANIZATION_NAME: ${ORGANIZATION_NAME}
+      PRIMARY_SITE_NAME: ${PRIMARY_SITE_NAME}
+      REMOTE_SITE_A_NAME: ${REMOTE_SITE_A_NAME}
+      REMOTE_SITE_B_NAME: ${REMOTE_SITE_B_NAME}
+      GREETING_MODE_NAME: ${GREETING_MODE_NAME}
+      PROGRAM_MODE_NAME: ${PROGRAM_MODE_NAME}
+      TURN_DOMAIN: ${TURN_DOMAIN}
+      TURN_STATIC_AUTH_SECRET: ${TURN_STATIC_AUTH_SECRET}
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - app-data:/app/data
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      campus-connect-web:
+        condition: service_healthy
+      streaming-relay:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      RTC_DOMAIN: ${RTC_DOMAIN}
+      STREAM_DOMAIN: ${STREAM_DOMAIN}
+      MONITOR_DOMAIN: ${MONITOR_DOMAIN}
+      MONITOR_ALLOWED_CIDR: ${MONITOR_ALLOWED_CIDR}
+    volumes:
+      - ./config/nginx/templates:/etc/nginx/templates:ro
+      - letsencrypt:/etc/letsencrypt:ro
+      - certbot-webroot:/var/www/certbot
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  certbot:
+    image: certbot/certbot:v3.1.0
+    profiles: ["certbot"]
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    logging: *default-logging
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    expose:
+      - "9090"
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:11.5.1
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SERVER_ROOT_URL: https://${MONITOR_DOMAIN}/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    expose:
+      - "3000"
+    logging: *default-logging
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1.23.16
+    restart: unless-stopped
+    volumes:
+      - uptime-kuma-data:/app/data
+    expose:
+      - "3001"
+    logging: *default-logging
+
+volumes:
+  redis-data:
+  egress-data:
+  streaming-relay-logs:
+  app-data:
+  letsencrypt:
+  certbot-webroot:
+  prometheus-data:
+  grafana-data:
+  uptime-kuma-data:

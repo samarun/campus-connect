@@ -1,0 +1,9 @@
+log_level: info
+api_key: ${RTC_API_KEY}
+api_secret: ${RTC_API_SECRET}
+ws_url: ws://host.docker.internal:7880
+insecure: true
+health_port: 7981
+prometheus_port: 6787
+redis:
+  address: redis:6379

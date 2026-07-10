@@ -1,0 +1,270 @@
+[defaults]
+backend = "avfoundation"
+video_device = "1"
+audio_device = "2"
+format = "1080p30"
+output = "local-program"
+encoder = "libx264"
+
+[formats.720p30]
+width = 1280
+height = 720
+frame_rate = "30"
+scan = "progressive"
+video_bitrate_kbps = 4500
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+
+[formats.720p25]
+width = 1280
+height = 720
+frame_rate = "25"
+scan = "progressive"
+video_bitrate_kbps = 4000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+
+[formats."720p29.97"]
+width = 1280
+height = 720
+frame_rate = "29.97"
+scan = "progressive"
+video_bitrate_kbps = 4500
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+
+[formats.720p50]
+width = 1280
+height = 720
+frame_rate = "50"
+scan = "progressive"
+video_bitrate_kbps = 6500
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+
+[formats."720p59.94"]
+width = 1280
+height = 720
+frame_rate = "59.94"
+scan = "progressive"
+video_bitrate_kbps = 6500
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+
+[formats.720p60]
+width = 1280
+height = 720
+frame_rate = "60"
+scan = "progressive"
+video_bitrate_kbps = 7000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+
+[formats."1080p23.976"]
+width = 1920
+height = 1080
+frame_rate = "23.976"
+scan = "progressive"
+video_bitrate_kbps = 8000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp23"
+
+[formats.1080p24]
+width = 1920
+height = 1080
+frame_rate = "24"
+scan = "progressive"
+video_bitrate_kbps = 8000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp24"
+
+[formats.1080p25]
+width = 1920
+height = 1080
+frame_rate = "25"
+scan = "progressive"
+video_bitrate_kbps = 8000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp25"
+
+[formats."1080p29.97"]
+width = 1920
+height = 1080
+frame_rate = "29.97"
+scan = "progressive"
+video_bitrate_kbps = 9000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp29"
+
+[formats.1080p30]
+width = 1920
+height = 1080
+frame_rate = "30"
+scan = "progressive"
+video_bitrate_kbps = 9000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp30"
+
+[formats.1080p50]
+width = 1920
+height = 1080
+frame_rate = "50"
+scan = "progressive"
+video_bitrate_kbps = 15000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp50"
+
+[formats."1080p59.94"]
+width = 1920
+height = 1080
+frame_rate = "59.94"
+scan = "progressive"
+video_bitrate_kbps = 18000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp59"
+
+[formats.1080p60]
+width = 1920
+height = 1080
+frame_rate = "60"
+scan = "progressive"
+video_bitrate_kbps = 18000
+keyframe_seconds = 2.0
+audio_sample_rate = 48000
+audio_channels = 2
+decklink_format_code = "Hp60"
+
+[outputs.local-program]
+kind = "srt"
+url = "srt://localhost:9999?streamid=default/broadcast/program"
+srt_latency_ms = 120
+srt_mode = "caller"
+
+[outputs.local-test]
+kind = "srt"
+url = "srt://localhost:9999?streamid=default/broadcast/test"
+srt_latency_ms = 120
+srt_mode = "caller"
+
+[outputs.production-program]
+kind = "srt"
+url = "srt://stream.example.com:9999?streamid=default/broadcast/program"
+srt_latency_ms = 120
+srt_mode = "caller"
+
+[outputs.local-recording]
+kind = "file"
+url = "capture-bridge/output/capture-test.ts"
+
+[outputs.rtc-whip-placeholder]
+kind = "whip"
+url = "https://rtc.example.com/whip"
+
+[profiles.program-local-srt]
+purpose = "program"
+backend = "avfoundation"
+video_device = "1"
+audio_device = "2"
+format = "1080p30"
+output = "local-program"
+encoder = "h264-videotoolbox"
+safe_mode = true
+
+[profiles.program-local-srt.macos]
+backend = "avfoundation"
+video_device = "1"
+audio_device = "2"
+encoder = "h264-videotoolbox"
+
+[profiles.program-local-srt.linux]
+backend = "v4l2"
+video_device = "/dev/video0"
+audio_device = "default"
+encoder = "libx264"
+
+[profiles.program-test-pattern]
+purpose = "program-test"
+backend = "lavfi"
+video_device = "testsrc2"
+format = "1080p30"
+output = "local-program"
+encoder = "libx264"
+safe_mode = true
+
+[profiles.relay-test-pattern]
+purpose = "relay-test"
+backend = "lavfi"
+video_device = "testsrc2"
+format = "1080p30"
+output = "local-test"
+encoder = "libx264"
+safe_mode = true
+
+[profiles.program-decklink-srt]
+purpose = "program"
+backend = "decklink"
+video_device = "DeckLink Mini Recorder 4K"
+format = "1080p30"
+output = "production-program"
+encoder = "libx264"
+safe_mode = false
+
+[profiles.program-decklink-srt.macos]
+backend = "decklink"
+video_device = "DeckLink Mini Recorder 4K"
+encoder = "libx264"
+
+[profiles.program-decklink-srt.linux]
+backend = "gstreamer-decklink"
+video_device = "0"
+audio_device = "hw:0"
+encoder = "libx264"
+
+[profiles.linux-rack-v4l2-srt]
+purpose = "program"
+backend = "v4l2"
+video_device = "/dev/video0"
+audio_device = "default"
+format = "1080p30"
+output = "production-program"
+encoder = "libx264"
+safe_mode = true
+
+[profiles.linux-rack-gstreamer-srt]
+purpose = "program"
+backend = "gstreamer-v4l2"
+video_device = "/dev/video0"
+audio_device = "default"
+format = "1080p30"
+output = "production-program"
+encoder = "libx264"
+safe_mode = true
+
+[profiles.greeting-whip-placeholder]
+purpose = "greeting"
+backend = "gstreamer-decklink"
+video_device = "DeckLink Mini Recorder 4K"
+format = "1080p30"
+output = "rtc-whip-placeholder"
+encoder = "libx264"
+safe_mode = false

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Campus Connect Capture Bridge",
+  "version": "0.1.0",
+  "identifier": "com.campusconnect.capturebridge",
+  "build": {
+    "beforeDevCommand": "cd \"$CAPTURE_BRIDGE_FRONTEND_DIR\" && trunk serve --address 127.0.0.1 --port 1420",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "cd \"$CAPTURE_BRIDGE_FRONTEND_DIR\" && trunk build --release",
+    "frontendDist": "../frontend/dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Campus Connect Capture Bridge",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 1040,
+        "minHeight": 720
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "deb", "appimage"],
+    "category": "Utility",
+    "shortDescription": "Campus Connect production capture bridge",
+    "longDescription": "Campus Connect Capture Bridge controls SDI/HDMI capture, format locking, and SRT/RTC handoff for Campus Connect."
+  }
+}

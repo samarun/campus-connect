@@ -1,0 +1,25 @@
+[package]
+name = "capture-gui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+name = "capture_gui_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "capture-gui"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build.workspace = true
+
+[dependencies]
+capture-common = { path = "../../../crates/capture-common" }
+capture-core = { path = "../../../crates/capture-core" }
+serde.workspace = true
+serde_json.workspace = true
+tauri.workspace = true
+which.workspace = true

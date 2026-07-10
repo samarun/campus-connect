@@ -1,0 +1,43 @@
+name: campus-connect-local-media
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    logging: *default-logging
+
+  rtc-server:
+    image: livekit/livekit-server:v1.13.3
+    restart: unless-stopped
+    command: ["--config", "/etc/livekit/local.yaml", "--node-ip", "${LOCAL_RTC_NODE_IP:-127.0.0.1}"]
+    depends_on:
+      - redis
+    ports:
+      - "7880:7880/tcp"
+      - "7881:7881/tcp"
+      - "50000-50100:50000-50100/udp"
+    volumes:
+      - ./config/rtc/local.yaml:/etc/livekit/local.yaml:ro
+    logging: *default-logging
+
+  streaming-relay:
+    image: ovenmedialabs/ovenmediaengine:v0.20.5
+    restart: unless-stopped
+    environment:
+      OME_HOST_IP: 127.0.0.1
+    ports:
+      - "1936:1935/tcp"
+      - "9999:9999/udp"
+      - "3333:3333/tcp"
+      - "10000-10003:10000-10003/udp"
+      - "10000:10000/tcp"
+    volumes:
+      - ./runtime/streaming/Server.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml:ro
+    logging: *default-logging

@@ -1,0 +1,22 @@
+[Unit]
+Description=Campus Connect Capture Bridge Daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=campusconnect
+Group=campusconnect
+WorkingDirectory=/opt/capture-bridge
+EnvironmentFile=-/etc/capture-bridge.env
+ExecStart=/usr/local/bin/capture-daemon --config /etc/capture-bridge/capture.local.toml --bind 127.0.0.1:4768
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/capture-bridge /var/log/capture-bridge
+
+[Install]
+WantedBy=multi-user.target

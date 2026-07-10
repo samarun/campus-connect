@@ -1,0 +1,20 @@
+port: 7880
+log_level: info
+development: true
+
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50100
+  use_external_ip: false
+  enable_loopback_candidate: true
+  allow_tcp_fallback: true
+
+redis:
+  address: redis:6379
+
+keys:
+  local_dev_key: local_dev_secret
+
+room:
+  auto_create: true
