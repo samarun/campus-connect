@@ -213,7 +213,7 @@ mkdir -p runtime/rtc runtime/streaming
 envsubst < rtc.yaml > runtime/rtc/server.yaml
 envsubst < config/rtc/ingress.yaml > runtime/rtc/ingress.yaml
 envsubst < config/rtc/egress.yaml > runtime/rtc/egress.yaml
-envsubst < config/streaming/Server.xml > runtime/streaming/Server.xml
+envsubst '$PUBLIC_IP' < config/streaming/Server.xml > runtime/streaming/Server.xml
 docker compose config --quiet
 ```
 

@@ -50,7 +50,9 @@ mkdir -p runtime/rtc runtime/streaming
 envsubst < rtc.yaml > runtime/rtc/server.yaml
 envsubst < config/rtc/ingress.yaml > runtime/rtc/ingress.yaml
 envsubst < config/rtc/egress.yaml > runtime/rtc/egress.yaml
-envsubst < config/streaming/Server.xml > runtime/streaming/Server.xml
+# Only substitute deployment-owned values in the OME config. OME itself uses
+# variables such as ${OriginStreamName}; replacing those here breaks playback.
+envsubst '$PUBLIC_IP' < config/streaming/Server.xml > runtime/streaming/Server.xml
 
 # These generated files are mounted read-only into containers that may run as
 # non-root users, so they must be world-readable on the host.

@@ -27,6 +27,18 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
   const programModeName = modeLabel("program", tenant);
 
   const source = useMemo(() => `${baseUrl.replace(/\/$/, "")}/${stream.app}/${stream.stream}/llhls.m3u8`, [baseUrl, stream]);
+  const statusLabel =
+    streamStatus === "available" ? "Active" : streamStatus === "checking" ? "Checking" : streamStatus === "waiting" ? "Inactive" : "Check failed";
+  const statusClass =
+    streamStatus === "available"
+      ? "bg-[#2f9b91]/15 text-[#2f9b91]"
+      : streamStatus === "checking"
+        ? "bg-[#e8a93e]/15 text-[#e8a93e]"
+        : streamStatus === "waiting"
+          ? "bg-[#dfe7e3] text-[#10252f]/70"
+          : "bg-[#e45f5f]/15 text-[#e45f5f]";
+  const overlayTitle =
+    streamStatus === "checking" ? "Checking stream" : streamStatus === "waiting" ? "Stream inactive" : "Stream check failed";
 
   useEffect(() => {
     let active = true;
@@ -46,7 +58,7 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
         }
 
         setStreamStatus("waiting");
-        setStreamMessage(`${stream.label} stream is not active yet. Start the encoder or send SRT to the relay.`);
+        setStreamMessage(`${stream.label} is not receiving an encoder signal yet. Start the encoder or send SRT/RTMP to the relay.`);
       } catch (error) {
         if (!active) return;
         setStreamStatus("error");
@@ -128,11 +140,14 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
               }}
               className={
                 item.stream === stream.stream
-                  ? "rounded-md bg-[#10252f] px-3 py-2 text-sm font-semibold text-white"
-                  : "rounded-md border border-[#10252f]/10 px-3 py-2 text-sm font-semibold text-[#10252f] hover:border-[#2f9b91]/50"
+                  ? "rounded-md border border-[#2f9b91] bg-[#10252f] px-3 py-2 text-sm font-semibold text-white shadow-sm ring-2 ring-[#2f9b91]/25"
+                  : "rounded-md border border-[#10252f]/10 px-3 py-2 text-sm font-semibold text-[#10252f] hover:border-[#2f9b91]/50 hover:bg-[#f8faf7]"
               }
             >
-              {item.label}
+              <span className="inline-flex items-center gap-2">
+                <span>{item.label}</span>
+                {item.stream === stream.stream ? <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em]">Selected</span> : null}
+              </span>
             </button>
           ))}
         </div>
@@ -142,6 +157,7 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 text-white">
           <Radio className="h-5 w-5 text-[#e45f5f]" aria-hidden="true" />
           <span className="font-bold">{stream.label}</span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] ${statusClass}`}>{statusLabel}</span>
           <code className="ml-auto hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 sm:block">{source}</code>
         </div>
         <div className="relative aspect-video w-full bg-black">
@@ -150,9 +166,7 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
             <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-white">
               <div className="max-w-2xl rounded-lg border border-white/10 bg-black/75 p-5 shadow-lg">
                 <AlertTriangle className="mx-auto h-10 w-10 text-[#e8a93e]" aria-hidden="true" />
-                <h4 className="mt-3 text-lg font-bold">
-                  {streamStatus === "checking" ? "Checking stream" : streamStatus === "waiting" ? "Waiting for encoder" : "Stream check failed"}
-                </h4>
+                <h4 className="mt-3 text-lg font-bold">{overlayTitle}</h4>
                 <p className="mt-2 text-sm text-white/75">{streamMessage}</p>
                 <div className="mt-4 grid gap-2 text-left text-xs text-white/70">
                   <div>

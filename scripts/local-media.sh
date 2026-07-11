@@ -7,7 +7,7 @@ cd "$ROOT_DIR"
 case "${1:-up}" in
   up)
     mkdir -p runtime/streaming
-    PUBLIC_IP="${LOCAL_STREAM_PUBLIC_IP:-127.0.0.1}" envsubst < config/streaming/Server.xml > runtime/streaming/Server.xml
+    PUBLIC_IP="${LOCAL_STREAM_PUBLIC_IP:-127.0.0.1}" envsubst '$PUBLIC_IP' < config/streaming/Server.xml > runtime/streaming/Server.xml
     docker compose -f docker-compose.local-media.yml up -d
     docker compose -f docker-compose.local-media.yml ps
     cat <<EOF
