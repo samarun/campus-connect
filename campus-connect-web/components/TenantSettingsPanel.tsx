@@ -10,8 +10,8 @@ const FIELDS: Array<{ key: keyof TenantSettings; label: string }> = [
   { key: "platformName", label: "Platform name" },
   { key: "organizationName", label: "Customer / organization name" },
   { key: "primarySiteName", label: "Primary site name" },
-  { key: "remoteSiteAName", label: "Campus B name" },
-  { key: "remoteSiteBName", label: "Campus C name" },
+  { key: "remoteSiteAName", label: "Second site display name" },
+  { key: "remoteSiteBName", label: "Third site display name" },
   { key: "greetingModeName", label: "First mode name" },
   { key: "programModeName", label: "Second mode name" }
 ];
