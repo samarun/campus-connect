@@ -40,6 +40,12 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
           : "bg-[#e45f5f]/15 text-[#e45f5f]";
   const overlayTitle =
     streamStatus === "checking" ? "Checking stream" : streamStatus === "waiting" ? "Stream inactive" : "Stream check failed";
+  const bitrateControlText =
+    streamStatus !== "available"
+      ? "Bitrates load after the stream is active."
+      : qualityLevels.length > 1
+        ? "Auto is selected by default. Choose a fixed bitrate only for testing."
+        : "Only one bitrate is available from the relay right now.";
 
   function describeHlsError(data: ErrorData) {
     const detail = data.details ? ` (${data.details})` : "";
@@ -48,9 +54,10 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
   }
 
   function formatQualityLabel(level: Hls["levels"][number]) {
-    const resolution = level.height ? `${level.height}p` : level.width && level.height ? `${level.width}x${level.height}` : level.name || "Source";
-    const bitrate = level.bitrate ? `${(level.bitrate / 1_000_000).toFixed(level.bitrate >= 1_000_000 ? 1 : 2)} Mbps` : "";
-    return [resolution, bitrate].filter(Boolean).join(" - ");
+    const resolution = level.height ? `${level.height}p` : level.width && level.height ? `${level.width}x${level.height}` : "";
+    const bitrate = level.bitrate ? `${Math.round(level.bitrate / 1000).toLocaleString()} kbps` : "";
+    const name = level.name && level.name !== resolution ? level.name : "";
+    return [name, resolution, bitrate].filter(Boolean).join(" - ") || "Source";
   }
 
   function changeQuality(value: number) {
@@ -234,20 +241,23 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
       </div>
 
       <div className="overflow-hidden rounded-lg border border-[#10252f]/10 bg-[#0d1b22] shadow-sm">
-        <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 text-white">
-          <Radio className="h-5 w-5 text-[#e45f5f]" aria-hidden="true" />
-          <span className="font-bold">{stream.label}</span>
-          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] ${statusClass}`}>{statusLabel}</span>
-          {qualityLevels.length > 1 ? (
-            <label className="ml-auto inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-white/70">
-              Quality
+        <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-4 py-3 text-white">
+          <div className="flex min-w-0 items-center gap-2">
+            <Radio className="h-5 w-5 shrink-0 text-[#e45f5f]" aria-hidden="true" />
+            <span className="font-bold">{stream.label}</span>
+            <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] ${statusClass}`}>{statusLabel}</span>
+          </div>
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+            <label className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-white/70" title={bitrateControlText}>
+              Bitrate
               <select
                 value={selectedQuality}
                 onChange={(event) => changeQuality(Number(event.target.value))}
-                className="rounded-md border border-white/10 bg-white/10 px-2 py-1 text-sm normal-case tracking-normal text-white outline-none"
+                disabled={streamStatus !== "available" || qualityLevels.length <= 1}
+                className="rounded-md border border-white/10 bg-white/10 px-2 py-1 text-sm normal-case tracking-normal text-white outline-none disabled:cursor-not-allowed disabled:opacity-55"
               >
                 <option value={-1} className="text-[#10252f]">
-                  Auto adaptive
+                  Auto bitrate
                 </option>
                 {qualityLevels.map((level) => (
                   <option key={level.index} value={level.index} className="text-[#10252f]">
@@ -256,13 +266,13 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
                 ))}
               </select>
             </label>
-          ) : null}
-          <code className={qualityLevels.length > 1 ? "hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 xl:block" : "ml-auto hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 sm:block"}>{source}</code>
+            <code className="hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 xl:block">{source}</code>
+          </div>
         </div>
-        <div className="relative aspect-video w-full bg-black">
+        <div className="relative aspect-[16/10] min-h-[360px] w-full bg-black md:min-h-[520px] lg:min-h-[620px]">
           <video
             ref={videoRef}
-            className="h-full w-full bg-black"
+            className="h-full w-full bg-black object-contain"
             controls
             playsInline
             autoPlay

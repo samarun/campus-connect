@@ -1,5 +1,5 @@
 import { campusLabel } from "./tenant";
-import type { CampusKey, ReceiverKey, TenantSettings } from "./types";
+import type { CampusKey, ReceiverKey, Role, TenantSettings } from "./types";
 
 const CAMPUS_ORDER: CampusKey[] = ["main", "b", "c"];
 const RECEIVER_ORDER: ReceiverKey[] = ["main", "campus-b", "campus-c", "grid"];
@@ -113,6 +113,13 @@ export function campusHref(campus: CampusKey, settings: TenantSettings) {
 
 export function receiverHref(receiver: ReceiverKey, settings: TenantSettings) {
   return `/receiver/${receiverSlugMap(settings)[receiver]}`;
+}
+
+export function homeHrefForRole(role: Role, settings: TenantSettings) {
+  if (role === "admin" || role === "operator") return "/operator";
+  if (role === "main") return campusHref("main", settings);
+  if (role === "campus-b") return campusHref("b", settings);
+  return campusHref("c", settings);
 }
 
 export function resolveCampusParam(value: string, settings: TenantSettings): CampusKey | null {

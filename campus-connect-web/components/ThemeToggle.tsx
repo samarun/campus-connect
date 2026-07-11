@@ -29,24 +29,26 @@ export function ThemeToggle() {
   }
 
   return (
-    <div className="inline-flex h-10 items-center rounded-md border border-[#10252f]/15 bg-white p-1 text-sm font-semibold text-[#10252f] shadow-sm">
+    <div className="inline-flex h-10 items-center rounded-md border border-[#10252f]/15 bg-white p-1 text-sm font-semibold text-[#10252f] shadow-sm" role="group" aria-label="Theme">
       <button
         type="button"
         onClick={() => chooseTheme("dark")}
-        className={theme === "dark" ? "inline-flex h-8 items-center gap-1 rounded px-2 bg-[#10252f] text-white" : "inline-flex h-8 items-center gap-1 rounded px-2 text-[#10252f]/70"}
+        className={theme === "dark" ? "inline-flex h-8 w-8 items-center justify-center rounded bg-[#10252f] text-white" : "inline-flex h-8 w-8 items-center justify-center rounded text-[#10252f]/70"}
+        aria-label="Use dark theme"
         aria-pressed={theme === "dark"}
+        title="Dark theme"
       >
         <Moon className="h-4 w-4" aria-hidden="true" />
-        Dark
       </button>
       <button
         type="button"
         onClick={() => chooseTheme("light")}
-        className={theme === "light" ? "inline-flex h-8 items-center gap-1 rounded px-2 bg-[#10252f] text-white" : "inline-flex h-8 items-center gap-1 rounded px-2 text-[#10252f]/70"}
+        className={theme === "light" ? "inline-flex h-8 w-8 items-center justify-center rounded bg-[#10252f] text-white" : "inline-flex h-8 w-8 items-center justify-center rounded text-[#10252f]/70"}
+        aria-label="Use light theme"
         aria-pressed={theme === "light"}
+        title="Light theme"
       >
         <Sun className="h-4 w-4" aria-hidden="true" />
-        Light
       </button>
     </div>
   );
