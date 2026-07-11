@@ -1,9 +1,9 @@
 "use client";
 
-import { ExternalLink, MonitorUp, Radio, Video } from "lucide-react";
+import { ExternalLink, LayoutGrid, MonitorUp, Radio, Video } from "lucide-react";
 import Link from "next/link";
 import { ROOMS } from "@/lib/constants";
-import { campusLabel, modeLabel } from "@/lib/tenant";
+import { campusLabel, modeLabel, receiverLabel } from "@/lib/tenant";
 import type { CampusKey, Role, TenantSettings } from "@/lib/types";
 import { MediaStage } from "./MediaStage";
 import { ModeBadge, useModeState } from "./ModeBadge";
@@ -18,6 +18,12 @@ export function CampusConsole({ campus, role, tenant, relayPublishUrl }: { campu
   const publish = mode === "greeting" || (mode === "program" && isMain);
   const greetingModeName = modeLabel("greeting", tenant);
   const programModeName = modeLabel("program", tenant);
+  const receiverLinks = [
+    { href: "/receiver/main", label: receiverLabel("main", tenant), icon: Video },
+    { href: "/receiver/campus-b", label: receiverLabel("campus-b", tenant), icon: Video },
+    { href: "/receiver/campus-c", label: receiverLabel("campus-c", tenant), icon: Video },
+    { href: "/receiver/main?view=grid", label: receiverLabel("grid", tenant), icon: LayoutGrid }
+  ];
   const title =
     mode === "greeting"
       ? `${siteName} ${greetingModeName}`
@@ -62,6 +68,36 @@ export function CampusConsole({ campus, role, tenant, relayPublishUrl }: { campu
             SRT publish URL: <code className="font-semibold">{relayPublishUrl}</code>
           </div>
         ) : null}
+      </section>
+
+      <section className="rounded-lg border border-[#10252f]/10 bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold text-[#10252f]">External display output</h3>
+            <p className="mt-1 text-sm text-[#10252f]/60">Open one feed or the grid on the display connected to this site video mixer.</p>
+          </div>
+          <span className="rounded-md bg-[#f8faf7] px-2 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[#10252f]/60">Receiver pages</span>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {receiverLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 rounded-md border border-[#10252f]/10 px-3 py-3 text-sm font-semibold hover:border-[#2f9b91]/50"
+              >
+                <Icon className="h-5 w-5 text-[#2f9b91]" aria-hidden="true" />
+                <span>
+                  <span className="block text-[#10252f]">{item.label}</span>
+                  <span className="block text-xs text-[#10252f]/55">Open for fullscreen output</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
       <ParticipantStatus room={room} tenant={tenant} />

@@ -16,8 +16,17 @@ function cleanLabel(value: unknown, fallback: string) {
   return trimmed.slice(0, MAX_LABEL_LENGTH);
 }
 
+function cleanSiteLabel(value: unknown, fallback: string, legacyValue: string) {
+  const cleaned = cleanLabel(value, fallback);
+  return cleaned === legacyValue ? fallback : cleaned;
+}
+
 function envDefault(name: string, fallback: string) {
   return cleanLabel(process.env[name], fallback);
+}
+
+function envSiteDefault(name: string, fallback: string, legacyValue: string) {
+  return cleanSiteLabel(process.env[name], fallback, legacyValue);
 }
 
 export function defaultTenantSettings(): TenantSettings {
@@ -25,8 +34,8 @@ export function defaultTenantSettings(): TenantSettings {
     platformName: envDefault("PLATFORM_NAME", DEFAULT_TENANT_SETTINGS.platformName),
     organizationName: envDefault("ORGANIZATION_NAME", DEFAULT_TENANT_SETTINGS.organizationName),
     primarySiteName: envDefault("PRIMARY_SITE_NAME", DEFAULT_TENANT_SETTINGS.primarySiteName),
-    remoteSiteAName: envDefault("REMOTE_SITE_A_NAME", DEFAULT_TENANT_SETTINGS.remoteSiteAName),
-    remoteSiteBName: envDefault("REMOTE_SITE_B_NAME", DEFAULT_TENANT_SETTINGS.remoteSiteBName),
+    remoteSiteAName: envSiteDefault("REMOTE_SITE_A_NAME", DEFAULT_TENANT_SETTINGS.remoteSiteAName, "Remote Site A"),
+    remoteSiteBName: envSiteDefault("REMOTE_SITE_B_NAME", DEFAULT_TENANT_SETTINGS.remoteSiteBName, "Remote Site B"),
     greetingModeName: envDefault("GREETING_MODE_NAME", DEFAULT_TENANT_SETTINGS.greetingModeName),
     programModeName: envDefault("PROGRAM_MODE_NAME", DEFAULT_TENANT_SETTINGS.programModeName)
   };
@@ -37,8 +46,8 @@ export function normalizeTenantSettings(value: Partial<TenantSettings>, fallback
     platformName: cleanLabel(value.platformName, fallback.platformName),
     organizationName: cleanLabel(value.organizationName, fallback.organizationName),
     primarySiteName: cleanLabel(value.primarySiteName, fallback.primarySiteName),
-    remoteSiteAName: cleanLabel(value.remoteSiteAName, fallback.remoteSiteAName),
-    remoteSiteBName: cleanLabel(value.remoteSiteBName, fallback.remoteSiteBName),
+    remoteSiteAName: cleanSiteLabel(value.remoteSiteAName, fallback.remoteSiteAName, "Remote Site A"),
+    remoteSiteBName: cleanSiteLabel(value.remoteSiteBName, fallback.remoteSiteBName, "Remote Site B"),
     greetingModeName: cleanLabel(value.greetingModeName, fallback.greetingModeName),
     programModeName: cleanLabel(value.programModeName, fallback.programModeName)
   };

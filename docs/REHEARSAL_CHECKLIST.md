@@ -31,17 +31,17 @@ srt://stream.example.com:9999?streamid=default/broadcast/test
 srt://stream.example.com:9999?streamid=default/broadcast/program
 ```
 
-## Remote Site A
+## Campus B
 
-- Login as `Remote Site A`.
+- Login as `Campus B`.
 - Open `/test` and confirm camera, microphone, and speaker.
 - Join Greeting Mode and verify bidirectional audio/video.
 - Switch to `/player/program` and confirm program playback.
 - Confirm local display audio is routed correctly.
 
-## Remote Site B
+## Campus C
 
-- Login as `Remote Site B`.
+- Login as `Campus C`.
 - Open `/test` and confirm camera, microphone, and speaker.
 - Join Greeting Mode and verify bidirectional audio/video.
 - Switch to `/player/program` and confirm program playback.
@@ -51,7 +51,7 @@ srt://stream.example.com:9999?streamid=default/broadcast/program
 
 - Login as `Operator`.
 - Switch to Greeting Mode.
-- Confirm Primary Site, Remote Site A, and Remote Site B are online.
+- Confirm Primary Site, Campus B, and Campus C are online.
 - Verify 3-way grid.
 - Verify each full-screen receiver page.
 - Switch to Program Mode.
@@ -63,7 +63,7 @@ srt://stream.example.com:9999?streamid=default/broadcast/program
 Go when:
 
 - All three sites appear online in Greeting Mode.
-- Primary Site receives Remote Site A and Remote Site B feeds.
+- Primary Site receives Campus B and Campus C feeds.
 - Remote sites receive Primary Site return feed.
 - Program playback works on both remote sites.
 - Monitoring is green.

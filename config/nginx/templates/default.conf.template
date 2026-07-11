@@ -37,7 +37,7 @@ server {
   add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
   add_header X-Content-Type-Options nosniff always;
   add_header Referrer-Policy strict-origin-when-cross-origin always;
-  add_header Permissions-Policy "camera=(self), microphone=(self), speaker-selection=(self), fullscreen=(self)" always;
+  add_header Permissions-Policy "camera=(self), microphone=(self), fullscreen=(self)" always;
 
   location /api/auth/login {
     limit_req zone=login_limit burst=5 nodelay;

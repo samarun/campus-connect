@@ -49,7 +49,7 @@ docker compose exec nginx wget -S -O- http://host.docker.internal:7880/ || true
 
 ## Feeds Disappear While Testing Multiple Roles
 
-Do not test `admin`, `operator`, `Primary Site`, `Remote Site A`, and `Remote Site B` in multiple tabs of the same browser profile. They share the same session cookie, so the most recent login replaces the earlier role for every tab on the domain.
+Do not test `admin`, `operator`, `Primary Site`, `Campus B`, and `Campus C` in multiple tabs of the same browser profile. They share the same session cookie, so the most recent login replaces the earlier role for every tab on the domain.
 
 Use separate devices, separate Chrome profiles, Incognito plus normal browser windows, or different browsers such as Chrome, Safari, and Firefox.
 

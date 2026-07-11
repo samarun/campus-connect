@@ -9,8 +9,8 @@ Before production use, log in as `admin` or `operator`, open `/operator`, and fi
 - Platform name
 - Customer / organization name
 - Primary site name
-- Remote site A name
-- Remote site B name
+- Campus B name
+- Campus C name
 - First mode name
 - Second mode name
 
@@ -24,8 +24,8 @@ Set these in `.env` for first boot defaults:
 PLATFORM_NAME='Campus Connect'
 ORGANIZATION_NAME='Customer Name'
 PRIMARY_SITE_NAME='Primary Site'
-REMOTE_SITE_A_NAME='Remote Site A'
-REMOTE_SITE_B_NAME='Remote Site B'
+REMOTE_SITE_A_NAME='Campus B'
+REMOTE_SITE_B_NAME='Campus C'
 GREETING_MODE_NAME='Greeting Mode'
 PROGRAM_MODE_NAME='Program Mode'
 ```

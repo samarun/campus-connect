@@ -15,20 +15,20 @@ export const DEFAULT_ROLE_LABELS: Record<Role, string> = {
   admin: "Administrator",
   operator: "Operator",
   main: "Primary Site",
-  "campus-b": "Remote Site A",
-  "campus-c": "Remote Site B"
+  "campus-b": "Campus B",
+  "campus-c": "Campus C"
 };
 
 export const DEFAULT_CAMPUS_LABELS: Record<CampusKey, string> = {
   main: "Primary Site",
-  b: "Remote Site A",
-  c: "Remote Site B"
+  b: "Campus B",
+  c: "Campus C"
 };
 
 export const DEFAULT_RECEIVER_LABELS: Record<ReceiverKey, string> = {
   main: "Primary Site Feed",
-  "campus-b": "Remote Site A Feed",
-  "campus-c": "Remote Site B Feed",
+  "campus-b": "Campus B Feed",
+  "campus-c": "Campus C Feed",
   grid: "3-Site Grid"
 };
 

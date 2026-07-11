@@ -5,8 +5,8 @@
 ```mermaid
 flowchart LR
   Primary["Primary Site browser"] --> RTC["RTC room: campus-greeting"]
-  RemoteA["Remote Site A browser"] --> RTC
-  RemoteB["Remote Site B browser"] --> RTC
+  RemoteA["Campus B browser"] --> RTC
+  RemoteB["Campus C browser"] --> RTC
   Operator["Operator dashboard"] --> RTC
   RTC --> RPrimary["Receiver: /receiver/main"]
   RTC --> RA["Receiver: /receiver/campus-b"]
@@ -22,11 +22,11 @@ flowchart LR
   Program["Primary Site final program"] --> Enc["OBS / hardware encoder / Capture Bridge"]
   Enc -->|"SRT UDP 9999 streamid=default/broadcast/program"| Relay["Streaming relay"]
   Relay -->|"LL-HLS https://stream.example.com/broadcast/program/llhls.m3u8"| Player["Branded program player"]
-  Player --> RemoteA["Remote Site A display"]
-  Player --> RemoteB["Remote Site B display"]
+  Player --> RemoteA["Campus B display"]
+  Player --> RemoteB["Campus C display"]
   PrimaryBrowser["Primary Site browser"] -->|"optional RTC monitor publish"| ProgramRoom["RTC room: campus-program"]
-  RemoteAConsole["Remote Site A browser"] -->|"muted/off by default; optional return"| ProgramRoom
-  RemoteBConsole["Remote Site B browser"] -->|"muted/off by default; optional return"| ProgramRoom
+  RemoteAConsole["Campus B browser"] -->|"muted/off by default; optional return"| ProgramRoom
+  RemoteBConsole["Campus C browser"] -->|"muted/off by default; optional return"| ProgramRoom
   ProgramRoom --> Operator["Operator monitor"]
 ```
 

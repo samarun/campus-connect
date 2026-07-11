@@ -77,8 +77,8 @@ Set customer defaults before first deploy, or set them later from `/operator`:
 PLATFORM_NAME='Campus Connect'
 ORGANIZATION_NAME='Customer Name'
 PRIMARY_SITE_NAME='Primary Site'
-REMOTE_SITE_A_NAME='Remote Site A'
-REMOTE_SITE_B_NAME='Remote Site B'
+REMOTE_SITE_A_NAME='Campus B'
+REMOTE_SITE_B_NAME='Campus C'
 GREETING_MODE_NAME='Greeting Mode'
 PROGRAM_MODE_NAME='Program Mode'
 ```
@@ -127,7 +127,7 @@ Use `./scripts/deploy.sh` instead of raw `docker compose up`; it runs production
 1. Open `https://app.example.com/login`.
 2. Log in as `admin` or `operator`.
 3. Open `/operator`.
-4. Use **Customer setup** to set the platform, organization, Primary Site, Remote Site A, Remote Site B, and mode names.
+4. Use **Customer setup** to set the platform, organization, Primary Site, Campus B, Campus C, and mode names.
 5. Refresh any open receiver/player windows.
 
 ## 8. Upgrade to c7i.4xlarge

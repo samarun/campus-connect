@@ -189,8 +189,8 @@ export RELAY_SRT_PUBLISH_URL=srt://stream.example.com:9999?streamid=default/broa
 export PLATFORM_NAME="Campus Connect"
 export ORGANIZATION_NAME="Demo Organization"
 export PRIMARY_SITE_NAME="Primary Site"
-export REMOTE_SITE_A_NAME="Remote Site A"
-export REMOTE_SITE_B_NAME="Remote Site B"
+export REMOTE_SITE_A_NAME="Campus B"
+export REMOTE_SITE_B_NAME="Campus C"
 export GREETING_MODE_NAME="Greeting Mode"
 export PROGRAM_MODE_NAME="Program Mode"
 export SESSION_SECRET=dummy_session_secret_123456789_dummy_session_secret_123456789

@@ -14,7 +14,7 @@ Before the first production event, open `/operator` and set the customer/platfor
 
 1. Open `/operator`.
 2. Select `Greeting Mode`.
-3. Confirm Primary Site, Remote Site A, and Remote Site B show Online.
+3. Confirm Primary Site, Campus B, and Campus C show Online.
 4. Use the live grid to verify camera framing and audio presence.
 5. Open receiver outputs as needed:
    - `/receiver/main`
