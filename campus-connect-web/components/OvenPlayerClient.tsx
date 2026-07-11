@@ -115,67 +115,68 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
     async function attachPlayer() {
       if (!video) return;
 
+      const { default: Hls } = await import("hls.js");
+      if (cancelled) return;
+
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          lowLatencyMode: true,
+          backBufferLength: 30,
+          liveSyncDurationCount: 2,
+          liveMaxLatencyDurationCount: 8,
+          maxLiveSyncPlaybackRate: 1.5
+        });
+        hlsRef.current = hls;
+
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (!data.fatal) return;
+
+          const message = describeHlsError(data);
+          setPlayerError(`${message} Retrying playback.`);
+
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+            hls.startLoad();
+            return;
+          }
+
+          if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+            hls.recoverMediaError();
+            return;
+          }
+
+          hls.destroy();
+          hlsRef.current = null;
+          setStreamStatus("error");
+          setStreamMessage(message);
+        });
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
+          setQualityLevels(
+            data.levels.map((level, index) => ({
+              index,
+              label: formatQualityLabel(level)
+            }))
+          );
+          changeQuality(-1);
+          video.play().catch(() => setPlayerError("Playback is ready. Press play if the browser blocks autoplay."));
+        });
+
+        hls.attachMedia(video);
+        hls.loadSource(source);
+        return;
+      }
+
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = source;
         video.load();
+        setPlayerError("Native HLS playback is active. Manual bitrate selection is available in Chrome or Edge through hls.js.");
         await video.play().catch(() => {
           if (!cancelled) setPlayerError("Playback is ready. Press play if the browser blocks autoplay.");
         });
         return;
       }
 
-      const { default: Hls } = await import("hls.js");
-      if (cancelled) return;
-
-      if (!Hls.isSupported()) {
-        setPlayerError("This browser cannot play HLS. Use Chrome, Edge, Safari, or a supported hardware player.");
-        return;
-      }
-
-      const hls = new Hls({
-        lowLatencyMode: true,
-        backBufferLength: 30,
-        liveSyncDurationCount: 2,
-        liveMaxLatencyDurationCount: 8,
-        maxLiveSyncPlaybackRate: 1.5
-      });
-      hlsRef.current = hls;
-
-      hls.on(Hls.Events.ERROR, (_event, data) => {
-        if (!data.fatal) return;
-
-        const message = describeHlsError(data);
-        setPlayerError(`${message} Retrying playback.`);
-
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-          hls.startLoad();
-          return;
-        }
-
-        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          hls.recoverMediaError();
-          return;
-        }
-
-        hls.destroy();
-        hlsRef.current = null;
-        setStreamStatus("error");
-        setStreamMessage(message);
-      });
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setQualityLevels(
-          hls.levels.map((level, index) => ({
-            index,
-            label: formatQualityLabel(level)
-          }))
-        );
-        changeQuality(-1);
-        video.play().catch(() => setPlayerError("Playback is ready. Press play if the browser blocks autoplay."));
-      });
-
-      hls.attachMedia(video);
-      hls.loadSource(source);
+      setPlayerError("This browser cannot play HLS. Use Chrome, Edge, Safari, or a supported hardware player.");
     }
 
     attachPlayer();
