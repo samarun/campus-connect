@@ -10,12 +10,19 @@ import type { TenantSettings } from "@/lib/types";
 
 type StreamStatus = "checking" | "available" | "waiting" | "error";
 
+type QualityLevel = {
+  index: number;
+  label: string;
+};
+
 export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl: string; relayPublishUrl: string; tenant: TenantSettings }) {
   const [stream, setStream] = useState<(typeof PLAYBACK_STREAMS)[number]>(PLAYBACK_STREAMS[0]);
   const [reloadKey, setReloadKey] = useState(0);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>("checking");
   const [streamMessage, setStreamMessage] = useState("Checking stream ingest.");
   const [playerError, setPlayerError] = useState<string | null>(null);
+  const [qualityLevels, setQualityLevels] = useState<QualityLevel[]>([]);
+  const [selectedQuality, setSelectedQuality] = useState(-1);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const programModeName = modeLabel("program", tenant);
@@ -38,6 +45,19 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
     const detail = data.details ? ` (${data.details})` : "";
     const responseCode = data.response?.code ? ` HTTP ${data.response.code}` : "";
     return `Playback error${responseCode}${detail}.`;
+  }
+
+  function formatQualityLabel(level: Hls["levels"][number]) {
+    const resolution = level.height ? `${level.height}p` : level.width && level.height ? `${level.width}x${level.height}` : level.name || "Source";
+    const bitrate = level.bitrate ? `${(level.bitrate / 1_000_000).toFixed(level.bitrate >= 1_000_000 ? 1 : 2)} Mbps` : "";
+    return [resolution, bitrate].filter(Boolean).join(" - ");
+  }
+
+  function changeQuality(value: number) {
+    setSelectedQuality(value);
+    const hls = hlsRef.current;
+    if (!hls) return;
+    hls.currentLevel = value;
   }
 
   useEffect(() => {
@@ -80,6 +100,8 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
 
     let cancelled = false;
     setPlayerError(null);
+    setQualityLevels([]);
+    setSelectedQuality(-1);
     hlsRef.current?.destroy();
     hlsRef.current = null;
 
@@ -135,6 +157,13 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
       });
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setQualityLevels(
+          hls.levels.map((level, index) => ({
+            index,
+            label: formatQualityLabel(level)
+          }))
+        );
+        changeQuality(-1);
         video.play().catch(() => setPlayerError("Playback is ready. Press play if the browser blocks autoplay."));
       });
 
@@ -158,6 +187,8 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
       hlsRef.current?.destroy();
       hlsRef.current = null;
       setPlayerError(null);
+      setQualityLevels([]);
+      setSelectedQuality(-1);
     }
   }, [streamStatus]);
 
@@ -207,7 +238,26 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
           <Radio className="h-5 w-5 text-[#e45f5f]" aria-hidden="true" />
           <span className="font-bold">{stream.label}</span>
           <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] ${statusClass}`}>{statusLabel}</span>
-          <code className="ml-auto hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 sm:block">{source}</code>
+          {qualityLevels.length > 1 ? (
+            <label className="ml-auto inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-white/70">
+              Quality
+              <select
+                value={selectedQuality}
+                onChange={(event) => changeQuality(Number(event.target.value))}
+                className="rounded-md border border-white/10 bg-white/10 px-2 py-1 text-sm normal-case tracking-normal text-white outline-none"
+              >
+                <option value={-1} className="text-[#10252f]">
+                  Auto adaptive
+                </option>
+                {qualityLevels.map((level) => (
+                  <option key={level.index} value={level.index} className="text-[#10252f]">
+                    {level.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          <code className={qualityLevels.length > 1 ? "hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 xl:block" : "ml-auto hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 sm:block"}>{source}</code>
         </div>
         <div className="relative aspect-video w-full bg-black">
           <video

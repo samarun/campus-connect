@@ -78,15 +78,70 @@
           <Name>broadcast</Name>
           <Type>live</Type>
           <OutputProfiles>
+            <Decodes>
+              <ThreadCount>2</ThreadCount>
+              <OnlyKeyframes>false</OnlyKeyframes>
+            </Decodes>
             <OutputProfile>
-              <Name>broadcast_bypass</Name>
+              <Name>broadcast_adaptive</Name>
               <OutputStreamName>${OriginStreamName}</OutputStreamName>
+              <Playlist>
+                <Name>adaptive_llhls</Name>
+                <FileName>llhls</FileName>
+                <Options>
+                  <WebRtcAutoAbr>true</WebRtcAutoAbr>
+                  <EnableTsPackaging>true</EnableTsPackaging>
+                </Options>
+                <Rendition>
+                  <Name>Source</Name>
+                  <Video>video_source</Video>
+                  <Audio>audio_source</Audio>
+                </Rendition>
+                <Rendition>
+                  <Name>720p</Name>
+                  <Video>video_720p</Video>
+                  <Audio>audio_source</Audio>
+                </Rendition>
+                <Rendition>
+                  <Name>480p</Name>
+                  <Video>video_480p</Video>
+                  <Audio>audio_source</Audio>
+                </Rendition>
+              </Playlist>
               <Encodes>
                 <Audio>
+                  <Name>audio_source</Name>
                   <Bypass>true</Bypass>
                 </Audio>
                 <Video>
+                  <Name>video_source</Name>
                   <Bypass>true</Bypass>
+                </Video>
+                <Video>
+                  <Name>video_720p</Name>
+                  <Codec>h264</Codec>
+                  <Profile>high</Profile>
+                  <Bitrate>2500000</Bitrate>
+                  <Framerate>30</Framerate>
+                  <Width>1280</Width>
+                  <Height>720</Height>
+                  <KeyFrameInterval>60</KeyFrameInterval>
+                  <Preset>faster</Preset>
+                  <BFrames>0</BFrames>
+                  <ThreadCount>4</ThreadCount>
+                </Video>
+                <Video>
+                  <Name>video_480p</Name>
+                  <Codec>h264</Codec>
+                  <Profile>main</Profile>
+                  <Bitrate>1000000</Bitrate>
+                  <Framerate>30</Framerate>
+                  <Width>854</Width>
+                  <Height>480</Height>
+                  <KeyFrameInterval>60</KeyFrameInterval>
+                  <Preset>faster</Preset>
+                  <BFrames>0</BFrames>
+                  <ThreadCount>2</ThreadCount>
                 </Video>
               </Encodes>
             </OutputProfile>

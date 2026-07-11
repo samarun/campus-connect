@@ -33,7 +33,8 @@ srt://stream.example.com:9999?streamid=default/broadcast/program
 ```
 
 4. Open `/player/program` and confirm the branded player receives the feed.
-5. Ask remote site volunteers to confirm stable playback.
+5. Leave Program player quality on `Auto adaptive` unless troubleshooting.
+6. Ask remote site volunteers to confirm stable playback.
 
 ## Rehearsal Checklist
 

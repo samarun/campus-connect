@@ -7,7 +7,7 @@ True mathematical lossless video is not realistic for browser WebRTC or public-i
 - Resolution: 1920x1080
 - Frame rate: 30 fps
 - Greeting Mode: high-quality WebRTC with an 8 Mbps camera target
-- Program Mode: SRT ingest with a 12-20 Mbps H.264 program target
+- Program Mode: SRT/RTMP ingest with a 12-20 Mbps H.264 program target and adaptive LL-HLS playback
 - Audio: 48 kHz source audio, stable clocking, no Bluetooth devices in production
 
 ## Greeting Mode
@@ -27,7 +27,21 @@ If a laptop cannot hold 1080p30 locally, the browser may still lower actual came
 
 ## Program Mode
 
-Use the stream relay for the final program feed. The relay is configured to bypass audio/video encoding, so quality is mainly controlled by the Primary Site encoder.
+Use the stream relay for the final program feed. The relay keeps the original source feed as the top-quality Program Mode rendition and also creates lower-bitrate adaptive playback renditions for remote sites.
+
+Default Program Mode LL-HLS ladder:
+
+- Source: original encoder feed, normally 1080p30 at 12-20 Mbps
+- 720p: 1280x720 at 2.5 Mbps
+- 480p: 854x480 at 1 Mbps
+
+The public playback URL stays the same:
+
+```text
+https://stream.example.com/broadcast/program/llhls.m3u8
+```
+
+The player uses adaptive bitrate by default. Use the quality selector on `/player/program` only for testing or troubleshooting.
 
 Recommended OBS or hardware encoder settings:
 
@@ -43,6 +57,8 @@ Recommended OBS or hardware encoder settings:
 - SRT latency: 250-800 ms depending on WAN quality
 
 LL-HLS playback has a few seconds of latency by design. If remote sites need sub-second program playback later, enable and test WebRTC playback separately from LL-HLS.
+
+Adaptive Program Mode uses relay CPU for the 720p and 480p renditions. Monitor CPU during rehearsal and upgrade from c7i.2xlarge to c7i.4xlarge if transcode load stays high.
 
 ## Local 1080p Test
 
