@@ -241,20 +241,20 @@ function PublisherDeviceControls({
 
   const cameras = devices.filter((device) => device.kind === "videoinput");
   const microphones = devices.filter((device) => device.kind === "audioinput");
-
-  if (!publishRequested || !canPublish) {
-    return (
-      <div className="border-b border-[#10252f]/10 bg-[#f8faf7] px-4 py-3 text-sm text-[#10252f]/70">
-        <span className="font-semibold text-[#10252f]">Receive-only:</span>{" "}
-        {!publishRequested
-          ? "this view is intentionally not publishing camera or microphone in the current mode."
-          : "your logged-in role can watch this room but cannot publish from this page."}
-      </div>
-    );
-  }
+  const status = canPublish
+    ? "Publishing enabled. These devices are used for the live room."
+    : !publishRequested
+      ? "Receive-only right now. Device choices are saved and will apply when this site is allowed to publish."
+      : "Receive-only for this login. Device choices are saved, but this role cannot publish from this page.";
 
   return (
-    <div className="border-b border-[#10252f]/10 bg-[#f8faf7] px-4 py-3">
+    <div className="border-t border-[#10252f]/10 bg-[#f8faf7] px-4 py-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-bold text-[#10252f]">Camera and microphone setup</p>
+        <span className={canPublish ? "rounded-md bg-[#2f9b91]/15 px-2 py-1 text-xs font-bold text-[#2f9b91]" : "rounded-md bg-[#e8a93e]/15 px-2 py-1 text-xs font-bold text-[#e8a93e]"}>
+          {canPublish ? "Live publishing" : "Saved for publishing"}
+        </span>
+      </div>
       <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto_auto]">
         <label className="grid gap-1">
           <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#10252f]/60">
@@ -309,9 +309,8 @@ function PublisherDeviceControls({
           Apply camera/mic
         </button>
       </div>
-      <p className="mt-2 text-xs text-[#10252f]/55">
-        {tenant.platformName} publishes with the selected devices after you apply. If labels are blank, click Refresh devices and allow browser access.
-      </p>
+      <p className="mt-2 text-xs text-[#10252f]/55">{status}</p>
+      <p className="mt-1 text-xs text-[#10252f]/55">If labels are blank, click Refresh devices and allow browser access for {tenant.platformName}.</p>
       {error ? <p className="mt-2 text-sm text-[#b83f3f]">{error}</p> : null}
     </div>
   );
@@ -409,7 +408,9 @@ export function MediaStage({
 
   function applyDevices(selection: DeviceSelection) {
     setDeviceSelection(selection);
-    setDeviceApplyKey((key) => key + 1);
+    if (publish && tokenResponse?.can_publish) {
+      setDeviceApplyKey((key) => key + 1);
+    }
   }
 
   useEffect(() => {
@@ -488,15 +489,6 @@ export function MediaStage({
           </button>
         </div>
       ) : null}
-      {!receiverMode && tokenResponse ? (
-        <PublisherDeviceControls
-          canPublish={publish && tokenResponse.can_publish}
-          publishRequested={publish}
-          selection={deviceSelection}
-          onApply={applyDevices}
-          tenant={tenant}
-        />
-      ) : null}
       <div className={receiverMode ? "video-stage h-full" : compact ? "video-stage h-[420px]" : "video-stage h-[620px]"}>
         <LiveKitRoom
           key={`${tokenResponse.identity}-${deviceApplyKey}`}
@@ -514,6 +506,15 @@ export function MediaStage({
             <RoomAudioRenderer />
             {showControls && !receiverMode ? <ControlBar /> : null}
             {!receiverMode ? <QualityStrip /> : null}
+            {!receiverMode ? (
+              <PublisherDeviceControls
+                canPublish={canPublish}
+                publishRequested={publish}
+                selection={deviceSelection}
+                onApply={applyDevices}
+                tenant={tenant}
+              />
+            ) : null}
             <ConnectionStateToast />
           </div>
         </LiveKitRoom>
