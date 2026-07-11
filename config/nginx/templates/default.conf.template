@@ -70,8 +70,8 @@ server {
   listen 443 ssl http2;
   server_name ${RTC_DOMAIN};
 
-  ssl_certificate /etc/letsencrypt/live/${RTC_DOMAIN}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/${RTC_DOMAIN}/privkey.pem;
+  ssl_certificate /etc/letsencrypt/live/${APP_DOMAIN}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/${APP_DOMAIN}/privkey.pem;
   ssl_protocols TLSv1.2 TLSv1.3;
 
   location / {
@@ -98,8 +98,8 @@ server {
   listen 443 ssl http2;
   server_name ${STREAM_DOMAIN};
 
-  ssl_certificate /etc/letsencrypt/live/${STREAM_DOMAIN}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/${STREAM_DOMAIN}/privkey.pem;
+  ssl_certificate /etc/letsencrypt/live/${APP_DOMAIN}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/${APP_DOMAIN}/privkey.pem;
   ssl_protocols TLSv1.2 TLSv1.3;
 
   add_header Access-Control-Allow-Origin "*" always;
@@ -132,8 +132,8 @@ server {
   listen 443 ssl http2;
   server_name ${MONITOR_DOMAIN};
 
-  ssl_certificate /etc/letsencrypt/live/${MONITOR_DOMAIN}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/${MONITOR_DOMAIN}/privkey.pem;
+  ssl_certificate /etc/letsencrypt/live/${APP_DOMAIN}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/${APP_DOMAIN}/privkey.pem;
   ssl_protocols TLSv1.2 TLSv1.3;
 
   allow ${MONITOR_ALLOWED_CIDR};

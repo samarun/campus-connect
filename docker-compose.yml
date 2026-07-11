@@ -81,8 +81,8 @@ services:
       - "--server-name=${TURN_DOMAIN}"
       - "--static-auth-secret=${TURN_STATIC_AUTH_SECRET}"
       - "--external-ip=${PUBLIC_IP}"
-      - "--cert=/etc/letsencrypt/live/${TURN_DOMAIN}/fullchain.pem"
-      - "--pkey=/etc/letsencrypt/live/${TURN_DOMAIN}/privkey.pem"
+      - "--cert=/etc/letsencrypt/live/${APP_DOMAIN}/fullchain.pem"
+      - "--pkey=/etc/letsencrypt/live/${APP_DOMAIN}/privkey.pem"
     volumes:
       - ./config/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
       - letsencrypt:/etc/letsencrypt:ro
