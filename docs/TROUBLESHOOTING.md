@@ -56,7 +56,7 @@ Use separate devices, separate Chrome profiles, Incognito plus normal browser wi
 Also confirm the current mode:
 
 - In `Greeting Mode`, all site pages can publish camera and microphone.
-- In `Program Mode`, only `Primary Site` publishes to the RTC room; remote sites are intentionally receive-only.
+- In `Program Mode`, `Primary Site` publishes by default; remote sites have camera/mic controls but start muted/off.
 - `/receiver/main`, `/receiver/campus-b`, `/receiver/campus-c`, and `/receiver/main?view=grid` are for the greeting RTC room.
 - Program playback uses `/player/program` and requires an active SRT/RTMP stream into the streaming relay.
 

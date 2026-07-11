@@ -15,7 +15,8 @@
 
 ## Program Mode
 
-- Remote site microphones are muted by default.
+- Remote site microphone and camera controls are available, but they start muted/off by default.
+- Only turn on microphone or camera if the operator asks for a live return.
 - Use `/player/program` for the program feed.
 - If playback stalls, press `Reload stream`.
 - Do not switch modes; the operator controls the production mode.

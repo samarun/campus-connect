@@ -75,7 +75,7 @@ export function OperatorDashboard({ tenant }: { tenant: TenantSettings }) {
               <Radio className="h-8 w-8 shrink-0 text-[#e45f5f]" aria-hidden="true" />
               <span>
                 <span className="block text-base font-bold text-[#10252f]">{programModeName}</span>
-                <span className="mt-1 block text-sm text-[#10252f]/65">{tenant.primarySiteName} publishes the program feed; remote site microphones stay muted.</span>
+                <span className="mt-1 block text-sm text-[#10252f]/65">{tenant.primarySiteName} publishes the program feed; remote sites start muted.</span>
               </span>
             </button>
           </div>

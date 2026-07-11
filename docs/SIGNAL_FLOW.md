@@ -25,11 +25,13 @@ flowchart LR
   Player --> RemoteA["Remote Site A display"]
   Player --> RemoteB["Remote Site B display"]
   PrimaryBrowser["Primary Site browser"] -->|"optional RTC monitor publish"| ProgramRoom["RTC room: campus-program"]
+  RemoteAConsole["Remote Site A browser"] -->|"muted/off by default; optional return"| ProgramRoom
+  RemoteBConsole["Remote Site B browser"] -->|"muted/off by default; optional return"| ProgramRoom
   ProgramRoom --> Operator["Operator monitor"]
 ```
 
 ## Rooms
 
 - `campus-greeting`: all three sites publish and subscribe.
-- `campus-program`: Primary Site can publish; remote sites subscribe only.
+- `campus-program`: Primary Site publishes by default; remote sites have camera/mic controls available but start muted/off.
 - `campus-backstage`: reserved for future production workflows.

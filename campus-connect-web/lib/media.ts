@@ -24,7 +24,7 @@ export function roleCanPublish(role: Role, room: RoomName) {
   if (role === "admin") return true;
   if (role === "operator") return room === "campus-backstage";
   if (room === "campus-greeting") return role === "main" || role === "campus-b" || role === "campus-c";
-  if (room === "campus-program") return role === "main";
+  if (room === "campus-program") return role === "main" || role === "campus-b" || role === "campus-c";
   if (room === "campus-backstage") return role === "main";
   return false;
 }

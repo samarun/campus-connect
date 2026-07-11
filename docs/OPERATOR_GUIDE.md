@@ -25,7 +25,7 @@ Before the first production event, open `/operator` and set the customer/platfor
 ## Program Mode
 
 1. Select `Program Mode` before the program handoff.
-2. Confirm remote site microphones remain muted.
+2. Confirm remote site microphones and cameras start muted/off.
 3. Confirm the Primary Site encoder is sending SRT to:
 
 ```text

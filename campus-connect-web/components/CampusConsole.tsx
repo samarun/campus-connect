@@ -36,7 +36,7 @@ export function CampusConsole({ campus, role, tenant, relayPublishUrl }: { campu
                 ? "Camera and microphone are available for near real-time site greeting."
                 : isMain
                   ? "Publish the program feed here for return monitoring. Send the final program to the streaming relay over SRT for remote playback."
-                  : `${programModeName} keeps this site microphone and camera muted by default.`}
+                  : `${programModeName} starts this site microphone and camera muted by default. Use the player controls only when the operator asks for a live return.`}
             </p>
           </div>
           <ModeBadge tenant={tenant} />

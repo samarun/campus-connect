@@ -176,13 +176,15 @@ function QualityStrip() {
 }
 
 function PublisherDeviceControls({
-  canPublish,
+  livePublishing,
+  hasPublishPermission,
   publishRequested,
   selection,
   onApply,
   tenant
 }: {
-  canPublish: boolean;
+  livePublishing: boolean;
+  hasPublishPermission: boolean;
   publishRequested: boolean;
   selection: DeviceSelection;
   onApply: (selection: DeviceSelection) => void;
@@ -241,8 +243,10 @@ function PublisherDeviceControls({
 
   const cameras = devices.filter((device) => device.kind === "videoinput");
   const microphones = devices.filter((device) => device.kind === "audioinput");
-  const status = canPublish
+  const status = livePublishing
     ? "Publishing enabled. These devices are used for the live room."
+    : hasPublishPermission
+      ? "Camera and microphone controls are available below. This page starts muted/off in the current mode."
     : !publishRequested
       ? "Receive-only right now. Device choices are saved and will apply when this site is allowed to publish."
       : "Receive-only for this login. Device choices are saved, but this role cannot publish from this page.";
@@ -251,8 +255,8 @@ function PublisherDeviceControls({
     <div className="border-t border-[#10252f]/10 bg-[#f8faf7] px-4 py-3">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-bold text-[#10252f]">Camera and microphone setup</p>
-        <span className={canPublish ? "rounded-md bg-[#2f9b91]/15 px-2 py-1 text-xs font-bold text-[#2f9b91]" : "rounded-md bg-[#e8a93e]/15 px-2 py-1 text-xs font-bold text-[#e8a93e]"}>
-          {canPublish ? "Live publishing" : "Saved for publishing"}
+        <span className={livePublishing ? "rounded-md bg-[#2f9b91]/15 px-2 py-1 text-xs font-bold text-[#2f9b91]" : "rounded-md bg-[#e8a93e]/15 px-2 py-1 text-xs font-bold text-[#e8a93e]"}>
+          {livePublishing ? "Live publishing" : hasPublishPermission ? "Muted by default" : "Saved for publishing"}
         </span>
       </div>
       <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto_auto]">
@@ -408,7 +412,7 @@ export function MediaStage({
 
   function applyDevices(selection: DeviceSelection) {
     setDeviceSelection(selection);
-    if (publish && tokenResponse?.can_publish) {
+    if (tokenResponse?.can_publish) {
       setDeviceApplyKey((key) => key + 1);
     }
   }
@@ -468,7 +472,8 @@ export function MediaStage({
     );
   }
 
-  const canPublish = publish && tokenResponse.can_publish;
+  const hasPublishPermission = tokenResponse.can_publish;
+  const canPublish = publish && hasPublishPermission;
 
   return (
     <section className={receiverMode ? "receiver-mode h-full bg-black" : "rounded-lg border border-[#10252f]/10 bg-white shadow-sm"}>
@@ -508,7 +513,8 @@ export function MediaStage({
             {!receiverMode ? <QualityStrip /> : null}
             {!receiverMode ? (
               <PublisherDeviceControls
-                canPublish={canPublish}
+                livePublishing={canPublish}
+                hasPublishPermission={hasPublishPermission}
                 publishRequested={publish}
                 selection={deviceSelection}
                 onApply={applyDevices}
