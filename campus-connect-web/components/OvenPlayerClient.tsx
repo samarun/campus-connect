@@ -1,29 +1,23 @@
 "use client";
 
-import Script from "next/script";
 import { AlertTriangle, Radio, RefreshCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type Hls from "hls.js";
+import type { ErrorData } from "hls.js";
 import { PLAYBACK_STREAMS } from "@/lib/constants";
 import { modeLabel } from "@/lib/tenant";
 import type { TenantSettings } from "@/lib/types";
 
-declare global {
-  interface Window {
-    OvenPlayer?: {
-      create: (elementId: string, options: Record<string, unknown>) => { remove?: () => void };
-    };
-  }
-}
-
 type StreamStatus = "checking" | "available" | "waiting" | "error";
 
 export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl: string; relayPublishUrl: string; tenant: TenantSettings }) {
-  const [ready, setReady] = useState(false);
   const [stream, setStream] = useState<(typeof PLAYBACK_STREAMS)[number]>(PLAYBACK_STREAMS[0]);
   const [reloadKey, setReloadKey] = useState(0);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>("checking");
   const [streamMessage, setStreamMessage] = useState("Checking stream ingest.");
-  const playerRef = useRef<{ remove?: () => void } | null>(null);
+  const [playerError, setPlayerError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const programModeName = modeLabel("program", tenant);
 
   const source = useMemo(() => `${baseUrl.replace(/\/$/, "")}/${stream.app}/${stream.stream}/llhls.m3u8`, [baseUrl, stream]);
@@ -39,6 +33,12 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
           : "bg-[#e45f5f]/15 text-[#e45f5f]";
   const overlayTitle =
     streamStatus === "checking" ? "Checking stream" : streamStatus === "waiting" ? "Stream inactive" : "Stream check failed";
+
+  function describeHlsError(data: ErrorData) {
+    const detail = data.details ? ` (${data.details})` : "";
+    const responseCode = data.response?.code ? ` HTTP ${data.response.code}` : "";
+    return `Playback error${responseCode}${detail}.`;
+  }
 
   useEffect(() => {
     let active = true;
@@ -75,45 +75,94 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
   }, [reloadKey, source, stream.label]);
 
   useEffect(() => {
-    if (!ready || !window.OvenPlayer || streamStatus !== "available") return;
-    playerRef.current?.remove?.();
-    playerRef.current = window.OvenPlayer.create("campus-connect-player", {
-      autoStart: true,
-      autoFallback: true,
-      mute: false,
-      controls: true,
-      hlsConfig: {
+    const video = videoRef.current;
+    if (!video || streamStatus !== "available") return;
+
+    let cancelled = false;
+    setPlayerError(null);
+    hlsRef.current?.destroy();
+    hlsRef.current = null;
+
+    async function attachPlayer() {
+      if (!video) return;
+
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = source;
+        video.load();
+        await video.play().catch(() => {
+          if (!cancelled) setPlayerError("Playback is ready. Press play if the browser blocks autoplay.");
+        });
+        return;
+      }
+
+      const { default: Hls } = await import("hls.js");
+      if (cancelled) return;
+
+      if (!Hls.isSupported()) {
+        setPlayerError("This browser cannot play HLS. Use Chrome, Edge, Safari, or a supported hardware player.");
+        return;
+      }
+
+      const hls = new Hls({
         lowLatencyMode: true,
-        liveSyncDuration: 1.5,
-        liveMaxLatencyDuration: 6,
+        backBufferLength: 30,
+        liveSyncDurationCount: 2,
+        liveMaxLatencyDurationCount: 8,
         maxLiveSyncPlaybackRate: 1.5
-      },
-      sources: [
-        {
-          label: stream.label,
-          type: "llhls",
-          file: source,
-          lowLatency: true
+      });
+      hlsRef.current = hls;
+
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        if (!data.fatal) return;
+
+        const message = describeHlsError(data);
+        setPlayerError(`${message} Retrying playback.`);
+
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          hls.startLoad();
+          return;
         }
-      ]
-    });
+
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError();
+          return;
+        }
+
+        hls.destroy();
+        hlsRef.current = null;
+        setStreamStatus("error");
+        setStreamMessage(message);
+      });
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => setPlayerError("Playback is ready. Press play if the browser blocks autoplay."));
+      });
+
+      hls.attachMedia(video);
+      hls.loadSource(source);
+    }
+
+    attachPlayer();
 
     return () => {
-      playerRef.current?.remove?.();
-      playerRef.current = null;
+      cancelled = true;
+      hlsRef.current?.destroy();
+      hlsRef.current = null;
+      video.removeAttribute("src");
+      video.load();
     };
-  }, [ready, source, stream.label, streamStatus]);
+  }, [source, streamStatus]);
 
   useEffect(() => {
     if (streamStatus !== "available") {
-      playerRef.current?.remove?.();
-      playerRef.current = null;
+      hlsRef.current?.destroy();
+      hlsRef.current = null;
+      setPlayerError(null);
     }
   }, [streamStatus]);
 
   return (
     <section className="space-y-4">
-      <Script src="/vendor/ovenplayer/ovenplayer.js" strategy="afterInteractive" onLoad={() => setReady(true)} />
       <div className="rounded-lg border border-[#10252f]/10 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -161,7 +210,20 @@ export function OvenPlayerClient({ baseUrl, relayPublishUrl, tenant }: { baseUrl
           <code className="ml-auto hidden rounded bg-white/10 px-2 py-1 text-xs text-white/80 sm:block">{source}</code>
         </div>
         <div className="relative aspect-video w-full bg-black">
-          <div id="campus-connect-player" className="h-full w-full" />
+          <video
+            ref={videoRef}
+            className="h-full w-full bg-black"
+            controls
+            playsInline
+            autoPlay
+            crossOrigin="anonymous"
+            aria-label={`${stream.label} ${programModeName} stream`}
+          />
+          {playerError && streamStatus === "available" ? (
+            <div className="absolute left-4 top-4 max-w-xl rounded-md border border-[#e8a93e]/35 bg-black/80 px-3 py-2 text-sm font-semibold text-white shadow-lg">
+              {playerError}
+            </div>
+          ) : null}
           {streamStatus !== "available" ? (
             <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-white">
               <div className="max-w-2xl rounded-lg border border-white/10 bg-black/75 p-5 shadow-lg">

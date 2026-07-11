@@ -16,6 +16,7 @@
     "@livekit/components-react": "2.9.21",
     "@livekit/components-styles": "^1.2.0",
     "bcryptjs": "3.0.3",
+    "hls.js": "1.6.16",
     "jose": "6.2.3",
     "livekit-client": "2.20.0",
     "livekit-server-sdk": "2.16.0",
