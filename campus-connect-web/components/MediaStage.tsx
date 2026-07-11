@@ -14,6 +14,7 @@ import {
 import { RefreshCcw, Signal, VideoOff } from "lucide-react";
 import { AudioPresets, RoomEvent, Track, VideoPresets, type AudioCaptureOptions, type Participant, type RoomOptions, type VideoCaptureOptions } from "livekit-client";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { apiError, clientErrorMessage, readJsonResponse } from "@/lib/client-response";
 import { roleLabel } from "@/lib/tenant";
 import type { Role, RoomName, TenantSettings } from "@/lib/types";
 
@@ -68,6 +69,17 @@ const platformRoomOptions: RoomOptions = {
     }
   }
 };
+
+function validateMediaServerUrl(value: string) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "wss:" && url.protocol !== "ws:") {
+      throw new Error("Real-time media URL must start with wss:// or ws://.");
+    }
+  } catch {
+    throw new Error("Real-time media URL is invalid. Check NEXT_PUBLIC_RTC_URL in the server .env file.");
+  }
+}
 
 function roleName(role: Role | null, tenant: TenantSettings) {
   return role ? roleLabel(role, tenant) : "All sites";
@@ -218,11 +230,12 @@ export function MediaStage({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ room_name: room })
         });
-        const json = (await response.json()) as TokenResponse | { error?: string };
-        if (!response.ok) throw new Error("error" in json && json.error ? json.error : "Media token failed");
+        const json = await readJsonResponse<TokenResponse | { error?: string }>(response);
+        if (!response.ok) throw new Error(apiError(json, "Media token failed."));
+        validateMediaServerUrl((json as TokenResponse).server_url);
         if (active) setTokenResponse(json as TokenResponse);
       } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : "Unable to connect to real-time media.");
+        if (active) setError(clientErrorMessage(err, "Unable to connect to real-time media."));
       }
     }
 

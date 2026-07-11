@@ -3,6 +3,7 @@
 import { Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { apiError, clientErrorMessage, readJsonResponse } from "@/lib/client-response";
 import type { TenantSettings } from "@/lib/types";
 
 const FIELDS: Array<{ key: keyof TenantSettings; label: string }> = [
@@ -30,22 +31,27 @@ export function TenantSettingsPanel({ tenant }: { tenant: TenantSettings }) {
     setBusy(true);
     setStatus(null);
 
-    const response = await fetch("/api/tenant", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form)
-    });
-    const json = (await response.json()) as TenantSettings | { error?: string };
-    setBusy(false);
+    try {
+      const response = await fetch("/api/tenant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      const json = await readJsonResponse<TenantSettings | { error?: string }>(response);
 
-    if (!response.ok) {
-      setStatus("error" in json && json.error ? json.error : "Unable to save setup.");
-      return;
+      if (!response.ok) {
+        setStatus(apiError(json, "Unable to save setup."));
+        return;
+      }
+
+      setForm(json as TenantSettings);
+      setStatus("Setup saved. Refresh open receiver windows to show the new names.");
+      router.refresh();
+    } catch (err) {
+      setStatus(clientErrorMessage(err, "Unable to save setup."));
+    } finally {
+      setBusy(false);
     }
-
-    setForm(json as TenantSettings);
-    setStatus("Setup saved. Refresh open receiver windows to show the new names.");
-    router.refresh();
   }
 
   return (

@@ -2,10 +2,11 @@
 
 import { Radio, Video } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiError, clientErrorMessage, readJsonResponse } from "@/lib/client-response";
 import { modeLabel } from "@/lib/tenant";
 import type { Mode, TenantSettings } from "@/lib/types";
 
-type ModeState = {
+export type ModeState = {
   mode: Mode;
   updatedAt: string;
   updatedBy: string;
@@ -21,14 +22,14 @@ export function useModeState() {
     async function load() {
       try {
         const response = await fetch("/api/mode", { cache: "no-store" });
-        if (!response.ok) throw new Error("Mode unavailable");
-        const json = (await response.json()) as ModeState;
+        const json = await readJsonResponse<ModeState | { error?: string }>(response);
+        if (!response.ok) throw new Error(apiError(json, "Mode status unavailable."));
         if (active) {
-          setState(json);
+          setState(json as ModeState);
           setError(null);
         }
       } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : "Mode unavailable");
+        if (active) setError(clientErrorMessage(err, "Mode status unavailable."));
       }
     }
 

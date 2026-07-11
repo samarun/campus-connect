@@ -3,6 +3,7 @@
 import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { apiError, clientErrorMessage, readJsonResponse } from "@/lib/client-response";
 import { roleLabel } from "@/lib/tenant";
 import type { Role, TenantSettings } from "@/lib/types";
 
@@ -19,19 +20,25 @@ export function LoginForm({ tenant }: { tenant: TenantSettings }) {
     event.preventDefault();
     setBusy(true);
     setError(null);
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role, password })
-    });
-    const json = (await response.json()) as { error?: string; redirectTo?: string };
-    setBusy(false);
-    if (!response.ok) {
-      setError(json.error ?? `${tenant.platformName} login failed.`);
-      return;
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, password })
+      });
+      const json = await readJsonResponse<{ error?: string; redirectTo?: string }>(response);
+      if (!response.ok) {
+        setError(apiError(json, `${tenant.platformName} login failed.`));
+        return;
+      }
+      router.push(json.redirectTo ?? "/operator");
+      router.refresh();
+    } catch (err) {
+      setError(clientErrorMessage(err, `${tenant.platformName} login failed.`));
+    } finally {
+      setBusy(false);
     }
-    router.push(json.redirectTo ?? "/operator");
-    router.refresh();
   }
 
   return (

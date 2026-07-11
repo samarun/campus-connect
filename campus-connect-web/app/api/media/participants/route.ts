@@ -25,6 +25,14 @@ function jsonSafe(value: unknown): unknown {
   return value;
 }
 
+function participantStatusWarning(error: unknown) {
+  const message = error instanceof Error ? error.message : "Unable to read media participants.";
+  if (/fetch failed|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|EHOSTUNREACH|network/i.test(message)) {
+    return "Participant status unavailable. Check RTC_API_URL and confirm the real-time server is reachable from the web container.";
+  }
+  return message;
+}
+
 export async function GET(request: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Login required." }, { status: 401 });
@@ -54,7 +62,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { room, participants: [], warning: error instanceof Error ? error.message : "Unable to read media participants." },
+      { room, participants: [], warning: participantStatusWarning(error) },
       { status: 200 }
     );
   }

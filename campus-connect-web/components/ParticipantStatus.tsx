@@ -2,6 +2,7 @@
 
 import { Circle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { apiError, clientErrorMessage, readJsonResponse } from "@/lib/client-response";
 import { roleLabel, roomLabel } from "@/lib/tenant";
 import type { Role, RoomName, TenantSettings } from "@/lib/types";
 
@@ -31,13 +32,14 @@ export function ParticipantStatus({ room, tenant }: { room: RoomName; tenant: Te
 
     async function load() {
       try {
-        const response = await fetch(`/api/media/participants?room=${room}`, { cache: "no-store" });
-        const json = (await response.json()) as { participants?: Participant[]; warning?: string };
+        const response = await fetch(`/api/media/participants?room=${encodeURIComponent(room)}`, { cache: "no-store" });
+        const json = await readJsonResponse<{ participants?: Participant[]; warning?: string; error?: string }>(response);
+        if (!response.ok) throw new Error(apiError(json, "Participant status unavailable."));
         if (!active) return;
         setParticipants(json.participants ?? []);
         setWarning(json.warning ?? null);
-      } catch {
-        if (active) setWarning("Participant status unavailable");
+      } catch (error) {
+        if (active) setWarning(clientErrorMessage(error, "Participant status unavailable."));
       }
     }
 

@@ -3,17 +3,19 @@
 import { LayoutGrid, Radio, Video } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { apiError, clientErrorMessage, readJsonResponse } from "@/lib/client-response";
 import { ROOMS } from "@/lib/constants";
 import { campusList, modeLabel, receiverLabel } from "@/lib/tenant";
 import type { Mode, TenantSettings } from "@/lib/types";
 import { MediaStage } from "./MediaStage";
-import { ModeBadge, useModeState } from "./ModeBadge";
+import { ModeBadge, type ModeState, useModeState } from "./ModeBadge";
 import { ParticipantStatus } from "./ParticipantStatus";
 import { TenantSettingsPanel } from "./TenantSettingsPanel";
 
 export function OperatorDashboard({ tenant }: { tenant: TenantSettings }) {
   const { state, setState, error } = useModeState();
   const [busy, setBusy] = useState<Mode | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const mode = state?.mode ?? "greeting";
   const siteNames = campusList(tenant);
   const greetingModeName = modeLabel("greeting", tenant);
@@ -21,15 +23,22 @@ export function OperatorDashboard({ tenant }: { tenant: TenantSettings }) {
 
   async function switchMode(nextMode: Mode) {
     setBusy(nextMode);
-    const response = await fetch("/api/mode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: nextMode })
-    });
-    if (response.ok) {
-      setState((await response.json()) as typeof state);
+    setActionError(null);
+
+    try {
+      const response = await fetch("/api/mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: nextMode })
+      });
+      const json = await readJsonResponse<ModeState | { error?: string }>(response);
+      if (!response.ok) throw new Error(apiError(json, "Unable to switch mode."));
+      setState(json as ModeState);
+    } catch (err) {
+      setActionError(clientErrorMessage(err, "Unable to switch mode."));
+    } finally {
+      setBusy(null);
     }
-    setBusy(null);
   }
 
   return (
@@ -70,7 +79,7 @@ export function OperatorDashboard({ tenant }: { tenant: TenantSettings }) {
               </span>
             </button>
           </div>
-          {error ? <p className="mt-3 text-sm text-[#b83f3f]">{error}</p> : null}
+          {error || actionError ? <p className="mt-3 text-sm text-[#b83f3f]">{actionError ?? error}</p> : null}
         </section>
 
         <section className="rounded-lg border border-[#10252f]/10 bg-white p-4 shadow-sm">

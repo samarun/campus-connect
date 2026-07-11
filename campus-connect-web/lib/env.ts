@@ -21,7 +21,16 @@ export function validateCoreEnv() {
 }
 
 export function publicRtcUrl() {
-  return getEnv("NEXT_PUBLIC_RTC_URL");
+  const value = getEnv("NEXT_PUBLIC_RTC_URL");
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "wss:" && url.protocol !== "ws:") {
+      throw new Error();
+    }
+  } catch {
+    throw new Error("NEXT_PUBLIC_RTC_URL must be a valid ws:// or wss:// URL.");
+  }
+  return value;
 }
 
 export function publicPlaybackBaseUrl() {
