@@ -52,5 +52,7 @@ envsubst < config/rtc/ingress.yaml > runtime/rtc/ingress.yaml
 envsubst < config/rtc/egress.yaml > runtime/rtc/egress.yaml
 envsubst < config/streaming/Server.xml > runtime/streaming/Server.xml
 
-chmod 600 runtime/rtc/server.yaml runtime/rtc/ingress.yaml runtime/rtc/egress.yaml runtime/streaming/Server.xml
+# These generated files are mounted read-only into containers that may run as
+# non-root users, so they must be world-readable on the host.
+chmod 644 runtime/rtc/server.yaml runtime/rtc/ingress.yaml runtime/rtc/egress.yaml runtime/streaming/Server.xml
 echo "Rendered runtime media configs."
