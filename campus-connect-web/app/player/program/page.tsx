@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/AppShell";
 import { OvenPlayerClient } from "@/components/OvenPlayerClient";
-import { publicPlaybackBaseUrl } from "@/lib/env";
+import { publicPlaybackBaseUrl, relayPublishUrl } from "@/lib/env";
 import { requireUser } from "@/lib/page-auth";
 import { modeLabel } from "@/lib/tenant";
 import { getTenantSettings } from "@/lib/tenant-store";
@@ -14,7 +14,7 @@ export default async function ProgramPlayerPage() {
   const programModeName = modeLabel("program", tenant);
   return (
     <AppShell user={user} eyebrow={`${programModeName} playback`} title={`${tenant.platformName} ${programModeName} player`}>
-      <OvenPlayerClient baseUrl={publicPlaybackBaseUrl()} tenant={tenant} />
+      <OvenPlayerClient baseUrl={publicPlaybackBaseUrl()} relayPublishUrl={relayPublishUrl()} tenant={tenant} />
     </AppShell>
   );
 }
