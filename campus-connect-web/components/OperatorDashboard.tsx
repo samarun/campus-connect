@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { apiError, clientErrorMessage, readJsonResponse } from "@/lib/client-response";
 import { ROOMS } from "@/lib/constants";
+import { receiverLinks as buildReceiverLinks } from "@/lib/site-routes";
 import { campusList, modeLabel, receiverLabel } from "@/lib/tenant";
 import type { Mode, TenantSettings } from "@/lib/types";
 import { MediaStage } from "./MediaStage";
@@ -88,14 +89,13 @@ export function OperatorDashboard({ tenant }: { tenant: TenantSettings }) {
             <h3 className="text-base font-bold text-[#10252f]">Receiver shortcuts</h3>
           </div>
           <div className="grid gap-2">
-            {[
-              ["/receiver/main", `${receiverLabel("main", tenant)} return`],
-              ["/receiver/campus-b", `${receiverLabel("campus-b", tenant)} full screen`],
-              ["/receiver/campus-c", `${receiverLabel("campus-c", tenant)} full screen`],
-              ["/receiver/main?view=grid", receiverLabel("grid", tenant)]
-            ].map(([href, label]) => (
+            {buildReceiverLinks(tenant).map(({ receiver, href }) => (
               <Link key={href} href={href} className="rounded-md border border-[#10252f]/10 px-3 py-2 text-sm font-semibold text-[#10252f] hover:border-[#2f9b91]/50">
-                {label}
+                {receiver === "main"
+                  ? `${receiverLabel(receiver, tenant)} return`
+                  : receiver === "grid"
+                    ? receiverLabel(receiver, tenant)
+                    : `${receiverLabel(receiver, tenant)} full screen`}
               </Link>
             ))}
           </div>

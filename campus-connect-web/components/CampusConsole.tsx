@@ -3,6 +3,7 @@
 import { ExternalLink, LayoutGrid, MonitorUp, Radio, Video } from "lucide-react";
 import Link from "next/link";
 import { ROOMS } from "@/lib/constants";
+import { receiverHref, receiverLinks as buildReceiverLinks } from "@/lib/site-routes";
 import { campusLabel, modeLabel, receiverLabel } from "@/lib/tenant";
 import type { CampusKey, Role, TenantSettings } from "@/lib/types";
 import { MediaStage } from "./MediaStage";
@@ -18,12 +19,11 @@ export function CampusConsole({ campus, role, tenant, relayPublishUrl }: { campu
   const publish = mode === "greeting" || (mode === "program" && isMain);
   const greetingModeName = modeLabel("greeting", tenant);
   const programModeName = modeLabel("program", tenant);
-  const receiverLinks = [
-    { href: "/receiver/main", label: receiverLabel("main", tenant), icon: Video },
-    { href: "/receiver/campus-b", label: receiverLabel("campus-b", tenant), icon: Video },
-    { href: "/receiver/campus-c", label: receiverLabel("campus-c", tenant), icon: Video },
-    { href: "/receiver/main?view=grid", label: receiverLabel("grid", tenant), icon: LayoutGrid }
-  ];
+  const receiverLinks = buildReceiverLinks(tenant).map(({ receiver, href }) => ({
+    href,
+    label: receiverLabel(receiver, tenant),
+    icon: receiver === "grid" ? LayoutGrid : Video
+  }));
   const title =
     mode === "greeting"
       ? `${siteName} ${greetingModeName}`
@@ -53,7 +53,7 @@ export function CampusConsole({ campus, role, tenant, relayPublishUrl }: { campu
             <MonitorUp className="h-5 w-5 text-[#2f9b91]" aria-hidden="true" />
             Camera, mic, speaker test
           </Link>
-          <Link href="/receiver/main" className="flex items-center gap-3 rounded-md border border-[#10252f]/10 px-3 py-3 text-sm font-semibold hover:border-[#e8a93e]/60">
+          <Link href={receiverHref("main", tenant)} className="flex items-center gap-3 rounded-md border border-[#10252f]/10 px-3 py-3 text-sm font-semibold hover:border-[#e8a93e]/60">
             <Video className="h-5 w-5 text-[#e8a93e]" aria-hidden="true" />
             {tenant.primarySiteName} return feed
           </Link>

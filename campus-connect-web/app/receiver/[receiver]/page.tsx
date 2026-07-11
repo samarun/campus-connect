@@ -1,14 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ReceiverView } from "@/components/ReceiverView";
 import { requireUser } from "@/lib/page-auth";
+import { receiverHref, resolveReceiverParam } from "@/lib/site-routes";
 import { getTenantSettings } from "@/lib/tenant-store";
-import type { ReceiverKey } from "@/lib/types";
 
 export const metadata = {
   title: "Receiver"
 };
-
-const RECEIVER_KEYS: ReceiverKey[] = ["main", "campus-b", "campus-c"];
 
 export default async function ReceiverPage({
   params,
@@ -23,7 +21,11 @@ export default async function ReceiverPage({
     params,
     searchParams
   ]);
-  if (!RECEIVER_KEYS.includes(receiverParam as ReceiverKey)) notFound();
-  const receiver = query.view === "grid" ? "grid" : (receiverParam as ReceiverKey);
+  const receiver = query.view === "grid" ? "grid" : resolveReceiverParam(receiverParam, tenant);
+  if (!receiver) notFound();
+
+  const canonicalPath = receiverHref(receiver, tenant);
+  if (`/receiver/${receiverParam}` !== canonicalPath || query.view) redirect(canonicalPath);
+
   return <ReceiverView receiver={receiver} tenant={tenant} />;
 }
