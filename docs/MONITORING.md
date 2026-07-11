@@ -41,7 +41,7 @@ Create TCP/UDP-aware external checks if your monitoring provider supports them:
 Watch:
 
 - Docker service health in `docker compose ps`.
-- Grafana service health panel.
+- Grafana service health, EC2 CPU/RAM/disk, network throughput, and top container CPU/RAM panels.
 - Prometheus target health for `/api/metrics`, RTC server, ingress, and egress.
 - Participant status in the operator dashboard.
 - Browser network quality indicators under the grid.
@@ -51,9 +51,43 @@ Useful commands:
 
 ```bash
 docker compose ps
+docker stats --no-stream
 docker compose logs -f rtc-server streaming-relay campus-connect-web nginx
 ./scripts/healthcheck.sh
 ```
+
+For host-level checks over SSH:
+
+```bash
+top
+free -h
+df -h
+uptime
+sudo ss -s
+```
+
+Install deeper live tools when debugging lag:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y htop sysstat iftop iotop
+htop
+sar -u 1 10
+sar -n DEV 1 10
+sudo iotop -oPa
+```
+
+## Scale Decision Rules
+
+Upgrade the EC2 instance if any of these happen during a real rehearsal:
+
+- CPU stays above 75-80% for more than 5 minutes.
+- `streaming-relay` is the top CPU container while Program Mode adaptive playback is active.
+- RAM usage stays above 80% or swap starts being used.
+- Network outbound is close to the instance/network limit or packet loss appears in browser quality indicators.
+- Disk is above 80% or I/O wait is high in `htop`/`sar`.
+
+If CPU jumps only after enabling adaptive Program Mode, the relay transcodes are the likely bottleneck. Move from `c7i.2xlarge` to `c7i.4xlarge` first.
 
 ## Alert Guidance
 
