@@ -47,6 +47,19 @@ docker compose exec nginx wget -S -O- http://host.docker.internal:7880/ || true
 - Set `NEXT_PUBLIC_RTC_URL=ws://<same-reachable-host>:7880` when viewing from another device.
 - Reload the site publisher pages after restarting media so they publish against the current candidates.
 
+## Feeds Disappear While Testing Multiple Roles
+
+Do not test `admin`, `operator`, `Primary Site`, `Remote Site A`, and `Remote Site B` in multiple tabs of the same browser profile. They share the same session cookie, so the most recent login replaces the earlier role for every tab on the domain.
+
+Use separate devices, separate Chrome profiles, Incognito plus normal browser windows, or different browsers such as Chrome, Safari, and Firefox.
+
+Also confirm the current mode:
+
+- In `Greeting Mode`, all site pages can publish camera and microphone.
+- In `Program Mode`, only `Primary Site` publishes to the RTC room; remote sites are intentionally receive-only.
+- `/receiver/main`, `/receiver/campus-b`, `/receiver/campus-c`, and `/receiver/main?view=grid` are for the greeting RTC room.
+- Program playback uses `/player/program` and requires an active SRT/RTMP stream into the streaming relay.
+
 ## TURN Fails
 
 - Confirm `turn.example.com` certificate exists.
