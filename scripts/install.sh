@@ -26,6 +26,8 @@ ufw allow 80/tcp
 ufw allow 443/tcp
 ufw allow 1935/tcp
 ufw allow 1936/tcp
+ufw allow from 172.16.0.0/12 to any port 7880 proto tcp
+ufw allow from 172.16.0.0/12 to any port 6789 proto tcp
 ufw allow 3478/tcp
 ufw allow 3478/udp
 ufw allow 5349/tcp

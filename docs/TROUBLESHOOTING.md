@@ -28,6 +28,14 @@ docker compose restart campus-connect-web
 
 - Confirm DNS for `rtc.example.com` points to the Elastic IP.
 - Confirm security group allows TCP `443`, TCP `7881`, and UDP `50000-60000`.
+- Confirm the host firewall allows Docker bridge containers to reach the RTC signaling port on the host:
+
+```bash
+sudo ufw allow from 172.16.0.0/12 to any port 7880 proto tcp
+sudo ufw reload
+docker compose exec nginx wget -S -O- http://host.docker.internal:7880/ || true
+```
+
 - Check `runtime/rtc/server.yaml` was rendered.
 - Check `docker compose logs rtc-server`.
 
