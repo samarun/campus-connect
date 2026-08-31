@@ -18,9 +18,9 @@ Start with the documentation index at [docs/README.md](docs/README.md).
 
 These captures are from a local demo run and do not represent a production deployment.
 
-- [Login](docs/screenshots/login.png) — Local demo sign-in screen.
-- [Operator dashboard](docs/screenshots/operator-dashboard.png) — Local demo control room with site status cards.
-- [Receiver grid](docs/screenshots/receiver-grid.png) — Local demo receiver view while feeds are disconnected.
+- ![Login](docs/screenshots/login.png) — Local demo sign-in screen.
+- ![Operator dashboard](docs/screenshots/operator-dashboard.png) — Local demo control room with site status cards.
+- ![Receiver grid](docs/screenshots/receiver-grid.png) — Local demo receiver view while feeds are disconnected.
 
 ## Modes
 
