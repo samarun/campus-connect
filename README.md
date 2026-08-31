@@ -14,6 +14,14 @@ Production-oriented Docker Compose stack for running a branded multi-site live v
 
 Start with the documentation index at [docs/README.md](docs/README.md).
 
+## Screenshots
+
+These captures are from a local demo run and do not represent a production deployment.
+
+- [Login](docs/screenshots/login.png) — Local demo sign-in screen.
+- [Operator dashboard](docs/screenshots/operator-dashboard.png) — Local demo control room with site status cards.
+- [Receiver grid](docs/screenshots/receiver-grid.png) — Local demo receiver view while feeds are disconnected.
+
 ## Modes
 
 - Greeting Mode: Primary Site, Remote Site A, and Remote Site B publish audio/video to `campus-greeting`.
