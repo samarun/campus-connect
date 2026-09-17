@@ -1,0 +1,60 @@
+name: Build BIBE preview image
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: campus-connect-bibe-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(github.event.pull_request.labels.*.name, 'bibe-preview')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the exact pull-request revision
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install application dependencies
+        working-directory: campus-connect-web
+        run: npm ci
+
+      - name: Run static verification
+        working-directory: campus-connect-web
+        run: |
+          npm run typecheck
+          npm run lint
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish the pull-request image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: ./campus-connect-web
+          file: ./campus-connect-web/Dockerfile
+          push: true
+          tags: ghcr.io/samarun/campus-connect-web:sha-${{ github.event.pull_request.head.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.event.pull_request.head.sha }}
+            bibe.arunsamuel.com/pr=${{ github.event.pull_request.number }}
+          cache-from: type=gha,scope=campus-connect-web
+          cache-to: type=gha,mode=max,scope=campus-connect-web

@@ -76,3 +76,19 @@ srt://stream.example.com:9999?streamid=default/broadcast/program
 ## Compliance
 
 The wrapper app in this repository is MIT licensed. The stream relay uses an upstream AGPLv3 media relay image; see [STREAM_RELAY_AGPL_NOTICE.md](docs/STREAM_RELAY_AGPL_NOTICE.md).
+
+## Opt-in BIBE pull-request previews
+
+Pull requests created from branches in this repository can publish an isolated
+preview image when a maintainer adds the `bibe-preview` label. The workflow
+runs type checking and linting, builds `campus-connect-web/Dockerfile`, and
+publishes the exact commit as:
+
+```text
+ghcr.io/samarun/campus-connect-web:sha-COMMIT
+```
+
+The local Buffer-inspired GitOps lab discovers labeled open PRs and deploys
+them at `campus-connect-pr-N.git.arunsamuel.com`. Fork pull requests are not
+built. The preview uses dummy RTC values and does not receive production
+passwords or credentials.
